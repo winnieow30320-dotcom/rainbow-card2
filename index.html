@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 彩虹卡靈性教練</title>
+    <style>
+        body { background: #fdfdfd; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; font-family: "Microsoft JhengHei", sans-serif; margin: 0; padding: 20px; }
+        #card { width: 320px; min-height: 200px; background: white; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border-left: 12px solid #ccc; transition: 0.5s; margin-bottom: 25px; }
+        .text-en { font-size: 1.1rem; color: #555; margin-bottom: 10px; font-style: italic; }
+        .text-zh { font-size: 1.4rem; font-weight: bold; color: #333; }
+        button { padding: 12px 40px; font-size: 1.1rem; cursor: pointer; border: none; background: #444; color: white; border-radius: 50px; transition: 0.3s; }
+        button:hover { background: #000; transform: translateY(-2px); }
+        #ai-suggestion { max-width: 500px; margin-top: 30px; padding: 20px; background: #fff; border-radius: 15px; font-size: 0.95rem; line-height: 1.6; color: #444; display: none; border: 1px dashed #ccc; }
+        .loading { color: #888; font-style: italic; }
+    </style>
+</head>
+<body>
+
+    <div id="card">
+        <div class="text-en">Ready to receive a message?</div>
+        <div class="text-zh">準備好接受指引了嗎？</div>
+    </div>
+
+    <button onclick="drawCard()">抽取彩虹卡並獲取建議</button>
+
+    <div id="ai-suggestion"></div>
+
+    <script>
+        // 請在此處輸入你的 API KEY
+        const AIzaSyBElKobcB1CcWsf8Gl1xXx20hFruO2ykEI = "AIzaSyBElKobcB1CcWsf8Gl1xXx20hFruO2ykEI";
+
+        const cards = [
+            { en: "I feel safe in the world.", zh: "我在世界中感到安全。", color: "#FF5252" },
+            { en: "I enjoy my creativity.", zh: "我享受我的創造力。", color: "#FF9800" },
+            { en: "I believe in myself.", zh: "我相信我自己。", color: "#FFEB3B" },
+            { en: "I love and accept myself.", zh: "我愛並接納我自己。", color: "#4CAF50" }
+            // ... 你可以繼續增加到 245 張
+        ];
+
+        async function drawCard() {
+            const cardEl = document.getElementById('card');
+            const suggestEl = document.getElementById('ai-suggestion');
+            
+            // 隨機抽選
+            const card = cards[Math.floor(Math.random() * cards.length)];
+            
+            // 更新 UI
+            cardEl.style.borderLeftColor = card.color;
+            cardEl.innerHTML = `<div class="text-en">${card.en}</div><div class="text-zh">${card.zh}</div>`;
+            
+            // 顯示載入狀態
+            suggestEl.style.display = "block";
+            suggestEl.innerHTML = "<span class='loading'>Gemini 正在為您沉思實踐方案...</span>";
+
+            // 調用 Gemini API
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: `我抽到了一張彩虹卡，內容是：「${card.zh}」。請給我三個具體、簡單、可立即執行的日常行動建議，幫助我落實這張卡的能量。請用親切溫暖的口吻，條列式呈現。` }] }]
+                    })
+                });
+
+                const data = await response.json();
+                const aiText = data.candidates[0].content.parts[0].text;
+                suggestEl.innerHTML = `<strong>🌟 實踐建議：</strong><br>${aiText.replace(/\n/g, '<br>')}`;
+            } catch (error) {
+                suggestEl.innerHTML = "建議獲取失敗，請確認 API Key 是否正確。";
+            }
+        }
+    </script>
+</body>
+</html>
