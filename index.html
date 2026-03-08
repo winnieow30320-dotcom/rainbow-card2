@@ -1,49 +1,4 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nina 的 AI 彩虹卡靈性教練</title>
-    <style>
-        body { background: #f7f7f7; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; font-family: "PingFang TC", "Heiti TC", sans-serif; margin: 0; padding: 40px 20px; }
-        #card { width: 100%; max-width: 350px; min-height: 220px; background: white; border-radius: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.08); border-left: 15px solid #ccc; transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1); margin-bottom: 30px; }
-        .text-en { font-size: 1rem; color: #666; margin-bottom: 12px; font-style: italic; line-height: 1.4; }
-        .text-zh { font-size: 1.5rem; font-weight: 600; color: #222; line-height: 1.5; }
-        button { padding: 15px 50px; font-size: 1.1rem; cursor: pointer; border: none; background: #333; color: white; border-radius: 50px; transition: 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        button:hover { background: #000; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
-        button:disabled { background: #ccc; cursor: not-allowed; }
-        #ai-suggestion { max-width: 500px; width: 90%; margin-top: 20px; padding: 25px; background: rgba(255,255,255,0.7); border-radius: 20px; font-size: 1rem; line-height: 1.8; color: #444; display: none; border: 1px solid #eee; backdrop-filter: blur(10px); }
-        .loading-spinner { color: #888; font-size: 0.9rem; letter-spacing: 1px; }
-        strong { color: #333; border-bottom: 2px solid #ffd700; }
-    </style>
-</head>
-<body>
-
-    <div id="card">
-        <div class="text-en">Every card carries a message from the universe.</div>
-        <div class="text-zh">每一張卡片，都是宇宙給你的訊息。</div>
-    </div>
-
-    <button id="drawBtn" onclick="drawCard()">抽取今日指引</button>
-
-    <div id="ai-suggestion"></div>
-
-    <script>
-        // 你的專屬 API Key
-        const GEMINI_API_KEY = "AIzaSyBElKobcB1CcWsf8Gl1xXx20hFruO2ykEI";
-
-        // 彩虹卡資料庫 (範例展示，你可以自行增加至 245 張)
-        const cards = [
-            { en: "I feel safe in the world.", zh: "我在世界中感到安全。", color: "#FF5252" },
-            { en: "I enjoy my creativity.", zh: "我享受我的創造力。", color: "#FF9800" },
-            { en: "I believe in myself.", zh: "我相信我自己。", color: "#FFEB3B" },
-            { en: "I love and accept myself.", zh: "我愛並接納我自己。", color: "#4CAF50" },
-            { en: "I speak my truth with love.", zh: "我用愛說出我的真理。", color: "#2196F3" },
-            { en: "I follow my intuition.", zh: "我跟隨我的直覺。", color: "#3F51B5" },
-            { en: "I am light and love.", zh: "我就是光，我就是愛。", color: "#9C27B0" }
-        ];
-
-        async function drawCard() {
+async function drawCard() {
             const btn = document.getElementById('drawBtn');
             const cardEl = document.getElementById('card');
             const suggestEl = document.getElementById('ai-suggestion');
@@ -51,44 +6,46 @@
             btn.disabled = true;
             btn.innerText = "讀取宇宙能量中...";
 
-            // 1. 隨機抽選
             const card = cards[Math.floor(Math.random() * cards.length)];
             
-            // 2. 更新卡片視覺
             cardEl.style.borderLeftColor = card.color;
-            cardEl.style.transform = "rotateY(360deg)";
-            setTimeout(() => {
-                cardEl.innerHTML = `<div class="text-en">${card.en}</div><div class="text-zh">${card.zh}</div>`;
-                cardEl.style.transform = "rotateY(0deg)";
-            }, 300);
+            cardEl.innerHTML = `<div class="text-en">${card.en}</div><div class="text-zh">${card.zh}</div>`;
             
-            // 3. 顯示 AI 載入狀態
             suggestEl.style.display = "block";
-            suggestEl.innerHTML = "<div class='loading-spinner'>✨ Gemini 正在感應卡片能量，請稍候...</div>";
+            suggestEl.innerHTML = "<div class='loading-spinner'>✨ Gemini 正在感應能量...</div>";
 
-            // 4. 調用 Gemini API 獲取三個實踐建議
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                // 使用 v1 穩定版
+                const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+                
+                const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: `我抽到了一張彩虹卡，內容是：「${card.zh}」。請針對這句話提供三個簡單、具體且今天就能做的日常落實建議。請用親切溫暖的口吻，條列式呈現，總字數在 150 字以內。` }] }]
+                        contents: [{ parts: [{ text: `我抽到一張彩虹卡：「${card.zh}」。請給我三個落實建議。` }] }]
                     })
                 });
 
                 const data = await response.json();
+
+                // 【關鍵保護】：檢查 Google 是否回傳了錯誤訊息
+                if (data.error) {
+                    throw new Error(`Google API 報錯: ${data.error.message}`);
+                }
+
+                // 【關鍵保護】：檢查是否有 candidates
+                if (!data.candidates || data.candidates.length === 0) {
+                    throw new Error("API 回傳資料格式不正確，請檢查 API Key 權限。");
+                }
+
                 const aiResponse = data.candidates[0].content.parts[0].text;
-                
-                // 格式化輸出
                 suggestEl.innerHTML = `<strong>🌟 Gemini 的實踐建議：</strong><br>${aiResponse.replace(/\n/g, '<br>')}`;
+                
             } catch (error) {
-                console.error(error);
-                suggestEl.innerHTML = "💡 暫時無法連接到 AI，請深呼吸感受這句話的力量，稍後再試。";
+                console.error("詳細錯誤訊息:", error);
+                suggestEl.innerHTML = `💡 抱歉，能量連線中斷。<br><small style="color:red;">原因：${error.message}</small>`;
             } finally {
                 btn.disabled = false;
                 btn.innerText = "再次抽取指引";
             }
         }
-    </script>
-</body>
-</html>
