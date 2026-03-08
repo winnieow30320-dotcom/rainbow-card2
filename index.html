@@ -3,337 +3,213 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nina 的 AI 彩虹卡靈性教練</title>
+    <title>Nina's Rainbow Cards</title>
     <style>
-        :root { --card-color: #ccc; }
-        body { background: #f4f7f6; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; font-family: "PingFang TC", "Heiti TC", sans-serif; margin: 0; padding: 40px 20px; color: #333; }
-        h1 { font-size: 1.2rem; font-weight: 400; color: #888; margin-bottom: 30px; letter-spacing: 2px; }
-        
-        #card { 
-            width: 100%; max-width: 350px; min-height: 220px; background: white; border-radius: 24px; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            padding: 30px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.05); 
-            border-left: 15px solid var(--card-color); transition: all 0.5s ease; margin-bottom: 30px;
+        :root { --chakra-color: #333; }
+        body { 
+            background: #f8f9fa; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh; 
+            font-family: "PingFang TC", "Heiti TC", sans-serif; 
+            margin: 0; 
+            padding: 20px;
+            overflow-x: hidden;
         }
-        
-        .text-en { font-size: 0.95rem; color: #777; margin-bottom: 12px; font-style: italic; line-height: 1.4; }
-        .text-zh { font-size: 1.4rem; font-weight: 600; color: #222; line-height: 1.5; }
-        
-        button { 
-            padding: 16px 50px; font-size: 1.1rem; cursor: pointer; border: none; 
-            background: #444; color: white; border-radius: 50px; transition: 0.3s; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+
+        h1 { font-size: 1.2rem; color: #aaa; letter-spacing: 4px; margin-bottom: 30px; font-weight: 300; }
+
+        /* 翻牌容器 */
+        .card-container {
+            width: 300px;
+            height: 420px;
+            perspective: 1200px;
+            margin-bottom: 40px;
+            cursor: pointer;
         }
-        button:hover { background: #000; transform: translateY(-2px); }
-        button:disabled { background: #ccc; cursor: not-allowed; }
-        
-        #ai-suggestion { 
-            max-width: 500px; width: 90%; margin-top: 25px; padding: 25px; 
-            background: rgba(255,255,255,0.8); border-radius: 20px; font-size: 1rem; 
-            line-height: 1.8; color: #444; display: none; border: 1px solid #eee;
-            backdrop-filter: blur(10px);
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
         }
-        .error-msg { color: #d9534f; font-size: 0.9rem; margin-top: 10px; }
-        .loading { color: #999; font-style: italic; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+
+        .is-flipped { transform: rotateY(180deg); }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            padding: 35px;
+            box-sizing: border-box;
+        }
+
+        /* 正面樣式 */
+        .card-front {
+            background: white;
+            border: 1px solid #eee;
+        }
+        .card-front::before {
+            content: "🌈";
+            font-size: 4rem;
+            filter: grayscale(1);
+            opacity: 0.3;
+        }
+
+        /* 背面樣式 */
+        .card-back {
+            background-color: var(--chakra-color);
+            color: white;
+            transform: rotateY(180deg);
+            transition: background-color 0.5s;
+        }
+
+        .text-en { font-size: 0.95rem; opacity: 0.85; margin-bottom: 20px; font-style: italic; line-height: 1.5; }
+        .text-zh { font-size: 1.5rem; font-weight: 600; line-height: 1.6; letter-spacing: 1px; }
+
+        /* 脈輪資訊 */
+        #chakra-info {
+            max-width: 350px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.6s ease;
+        }
+        .chakra-title { 
+            font-weight: 600; 
+            font-size: 1.1rem; 
+            margin-bottom: 10px; 
+            color: var(--chakra-color);
+            display: inline-block;
+            padding-bottom: 5px;
+            border-bottom: 2px solid var(--chakra-color);
+        }
+        .chakra-desc { font-size: 0.9rem; line-height: 1.7; color: #666; }
+
+        button {
+            margin-top: 20px;
+            padding: 14px 45px;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            background: #333;
+            color: white;
+            border-radius: 50px;
+            letter-spacing: 1px;
+            transition: 0.3s;
+        }
+        button:hover { background: #000; transform: scale(1.05); }
+        
+        @media (max-height: 700px) {
+            .card-container { width: 260px; height: 360px; }
+            h1 { margin-bottom: 15px; }
+        }
     </style>
 </head>
 <body>
 
     <h1>RAINBOW CARDS</h1>
 
-    <div id="card">
-        <div class="text-en">Welcome. Click below to draw a card.</div>
-        <div class="text-zh">歡迎，點擊下方抽取一張指引。</div>
+    <div class="card-container" onclick="drawCard()">
+        <div class="card-inner" id="cardInner">
+            <div class="card-face card-front">
+                <p style="color:#bbb; font-size: 0.8rem; margin-top:20px;">點擊卡片翻開指引</p>
+            </div>
+            <div class="card-face card-back" id="cardBack">
+                <div class="text-en" id="displayEn"></div>
+                <div class="text-zh" id="displayZh"></div>
+            </div>
+        </div>
     </div>
 
-    <button id="drawBtn" onclick="drawCard()">抽取今日指引</button>
+    <button onclick="drawCard()">抽取今日指引</button>
 
-    <div id="ai-suggestion"></div>
+    <div id="chakra-info">
+        <div class="chakra-title" id="chakraTitle"></div>
+        <div class="chakra-desc" id="chakraDesc"></div>
+    </div>
 
     <script>
-        const GEMINI_API_KEY = "AIzaSyB-6ZlAd0HwjoNVgiEnoCm7u-tYxp_Mn00";
+        const chakraData = {
+            "#FF5252": { name: "海底輪 (Root Chakra)", desc: "能量與行動力：幫助我們落實目標，建立生存的安全感。" },
+            "#FF9800": { name: "臍輪 (Sacral Chakra)", desc: "創造力與情緒：掌管喜悅與感受，啟動生命的流動感。" },
+            "#FFEB3B": { name: "太陽神經叢 (Solar Plexus)", desc: "自信與個人力量：增強意志力與自尊心，勇敢做自己。" },
+            "#4CAF50": { name: "心輪 (Heart Chakra)", desc: "愛與療癒：開啟慈悲心，學習無條件地愛自己與他人。" },
+            "#2196F3": { name: "喉輪 (Throat Chakra)", desc: "溝通與表達：幫助誠實說出真理，展現內在真實聲音。" },
+            "#3F51B5": { name: "眉心輪 (Third Eye)", desc: "直覺與智慧：超越表象的洞察力，連結內在深層覺知。" },
+            "#9C27B0": { name: "頂輪 (Crown Chakra)", desc: "靈性與合一：感受與宇宙能量連結，獲得內在平靜。" }
+        };
 
-        // 所有的 245 張卡片資料庫放在這裡
         const cards = [
-            // --- 紅色系列 ---
-            { en: "I feel safe in the world.", zh: "我在世界中感到安全。", color: "#FF5252" },
-            { en: "I trust the process of life.", zh: "我信任生命的過程。", color: "#FF5252" },
-            { en: "I am grounded and stable.", zh: "我是腳踏實地且穩定的。", color: "#FF5252" },
-            { en: "I have everything I need.", zh: "我擁有我所需要的一切。", color: "#FF5252" },
-            { en: "I celebrate my life every day.", zh: "我每天慶祝我的生命。", color: "#FF5252" },
-            { en: "I am strong and healthy.", zh: "我是強壯且健康的。", color: "#FF5252" },
-            { en: "I am supported by the universe.", zh: "宇宙支持著我。", color: "#FF5252" },
-            { en: "I am willing to let go of the past.", zh: "我願意放下過去。", color: "#FF5252" },
-            { en: "I am a successful person.", zh: "我是一個成功的人。", color: "#FF5252" },
-            { en: "I am open to the abundance of life.", zh: "我對生命的豐盛持開放態度。", color: "#FF5252" },
-            { en: "I have the courage to be myself.", zh: "我有勇氣做我自己。", color: "#FF5252" },
-            { en: "I am worthy of respect.", zh: "我值得被尊重。", color: "#FF5252" },
-            { en: "I am full of energy and enthusiasm.", zh: "我充滿了能量與熱忱。", color: "#FF5252" },
-            { en: "I trust my body's wisdom.", zh: "我信任我身體的智慧。", color: "#FF5252" },
-            { en: "I am safe here and now.", zh: "此時此刻我是安全的。", color: "#FF5252" },
-            { en: "I have the power to create my reality.", zh: "我有力量創造我的實相。", color: "#FF5252" },
-            { en: "I am a divine being.", zh: "我是一個神聖的生命。", color: "#FF5252" },
-            { en: "I am centered and balanced.", zh: "我是中心且平衡的。", color: "#FF5252" },
-            { en: "I belong to the world.", zh: "我屬於這個世界。", color: "#FF5252" },
-            { en: "I manifest my dreams easily.", zh: "我輕易地顯化我的夢想。", color: "#FF5252" },
-            { en: "I am a magnet for miracles.", zh: "我是奇蹟的磁鐵。", color: "#FF5252" },
-            { en: "I love my body.", zh: "我愛我的身體。", color: "#FF5252" },
-            { en: "I am grateful for my physical life.", zh: "我對我的物質生活充滿感激。", color: "#FF5252" },
-            { en: "I am persistent and patient.", zh: "我是有毅力且有耐心的。", color: "#FF5252" },
-            { en: "I take action with confidence.", zh: "我充滿自信地採取行動。", color: "#FF5252" },
-            { en: "I am provided for by the universe.", zh: "宇宙供應我的一切所需。", color: "#FF5252" },
-            { en: "I am enough just as I am.", zh: "我就是我，這樣就夠了。", color: "#FF5252" },
-            { en: "I radiate vitality.", zh: "我放射出生命力。", color: "#FF5252" },
-            { en: "I am connected to the earth.", zh: "我與大地相連結。", color: "#FF5252" },
-            { en: "I have the right to be here.", zh: "我有權利待在這裡。", color: "#FF5252" },
-            { en: "I trust the universe's timing.", zh: "我信任宇宙的時機。", color: "#FF5252" },
-            { en: "I am at home in the world.", zh: "我在世界上有如在家般自在。", color: "#FF5252" },
-            { en: "I am bold and brave.", zh: "我是大膽且勇敢的。", color: "#FF5252" },
-            { en: "My needs are always met.", zh: "我的需求總是得到滿足。", color: "#FF5252" },
-            { en: "I am alive and vibrant.", zh: "我是充滿活力且生機勃勃的。", color: "#FF5252" },
+            // 紅色 (35張)
+            {en:"I feel safe in the world.",zh:"我在世界中感到安全。",color:"#FF5252"},{en:"I trust the process of life.",zh:"我信任生命的過程。",color:"#FF5252"},{en:"I am grounded and stable.",zh:"我是腳踏實地且穩定的。",color:"#FF5252"},{en:"I have everything I need.",zh:"我擁有我所需要的一切。",color:"#FF5252"},{en:"I celebrate my life every day.",zh:"我每天慶祝我的生命。",color:"#FF5252"},{en:"I am strong and healthy.",zh:"我是強壯且健康的。",color:"#FF5252"},{en:"I am supported by the universe.",zh:"宇宙支持著我。",color:"#FF5252"},{en:"I am willing to let go of the past.",zh:"我願意放下過去。",color:"#FF5252"},{en:"I am a successful person.",zh:"我是一個成功的人。",color:"#FF5252"},{en:"I am open to the abundance of life.",zh:"我對生命的豐盛持開放態度。",color:"#FF5252"},{en:"I have the courage to be myself.",zh:"我有勇氣做我自己。",color:"#FF5252"},{en:"I am worthy of respect.",zh:"我值得被尊重。",color:"#FF5252"},{en:"I am full of energy and enthusiasm.",zh:"我充滿了能量與熱忱。",color:"#FF5252"},{en:"I trust my body's wisdom.",zh:"我信任我身體的智慧。",color:"#FF5252"},{en:"I am safe here and now.",zh:"此時此刻我是安全的。",color:"#FF5252"},{en:"I have the power to create my reality.",zh:"我有力量創造我的實相。",color:"#FF5252"},{en:"I am a divine being.",zh:"我是一個神聖的生命。",color:"#FF5252"},{en:"I am centered and balanced.",zh:"我是中心且平衡的。",color:"#FF5252"},{en:"I belong to the world.",zh:"我屬於這個世界。",color:"#FF5252"},{en:"I manifest my dreams easily.",zh:"我輕易地顯化我的夢想。",color:"#FF5252"},{en:"I am a magnet for miracles.",zh:"我是奇蹟的磁鐵。",color:"#FF5252"},{en:"I love my body.",zh:"我愛我的身體。",color:"#FF5252"},{en:"I am grateful for my physical life.",zh:"我對我的物質生活充滿感激。",color:"#FF5252"},{en:"I am persistent and patient.",zh:"我是有毅力且有耐心的。",color:"#FF5252"},{en:"I take action with confidence.",zh:"我充滿自信地採取行動。",color:"#FF5252"},{en:"I am provided for by the universe.",zh:"宇宙供應我的一切所需。",color:"#FF5252"},{en:"I am enough just as I am.",zh:"我就是我，這樣就夠了。",color:"#FF5252"},{en:"I radiate vitality.",zh:"我放射出生命力。",color:"#FF5252"},{en:"I am connected to the earth.",zh:"我與大地相連結。",color:"#FF5252"},{en:"I have the right to be here.",zh:"我有權利待在這裡。",color:"#FF5252"},{en:"I trust the universe's timing.",zh:"我信任宇宙的時機。",color:"#FF5252"},{en:"I am at home in the world.",zh:"我在世界上有如在家般自在。",color:"#FF5252"},{en:"I am bold and brave.",zh:"我是大膽且勇敢的。",color:"#FF5252"},{en:"My needs are always met.",zh:"我的需求總是得到滿足。",color:"#FF5252"},{en:"I am alive and vibrant.",zh:"我是充滿活力且生機勃勃的。",color:"#FF5252"},
+            
+            // 橙色 (35張)
+            {en:"I enjoy my creativity.",zh:"我享受我的創造力。",color:"#FF9800"},{en:"I honor my feelings.",zh:"我尊重我的感受。",color:"#FF9800"},{en:"I am open to new experiences.",zh:"我對新的經驗持開放態度。",color:"#FF9800"},{en:"I flow with the rhythm of life.",zh:"我隨生命的節奏流動。",color:"#FF9800"},{en:"I am unique and beautiful.",zh:"我是獨特且美麗的。",color:"#FF9800"},{en:"I deserve to have fun.",zh:"我值得擁有樂趣。",color:"#FF9800"},{en:"I embrace my sensuality.",zh: "我擁抱我的感官享受。",color:"#FF9800"},{en:"I allow myself to be happy.",zh:"我允許自己快樂。",color:"#FF9800"},{en:"I am a creative being.",zh:"我是一個有創造力的生命。",color:"#FF9800"},{en:"I am flexible and open to change.",zh:"我是靈活且對改變持開放態度的。",color:"#FF9800"},{en:"I express my emotions healthily.",zh:"我健康地表達我的情緒。",color:"#FF9800"},{en:"I am worthy of pleasure.",zh:"我值得擁有愉悅。",color:"#FF9800"},{en:"I celebrate my inner child.",zh:"我慶祝我內在的孩童。",color:"#FF9800"},{en:"I am in touch with my needs.",zh:"我能感知自己的需求。",color:"#FF9800"},{en:"I attract positive relationships.",zh:"我吸引正向的人際關係。",color:"#FF9800"},{en:"I am passionate about life.",zh:"我對生命充滿熱情。",color:"#FF9800"},{en:"I allow my life to be easy.",zh:"我允許我的生活是輕鬆的。",color:"#FF9800"},{en:"I am comfortable with intimacy.",zh:"我對親密感感到自在。",color:"#FF9800"},{en:"I create beauty around me.",zh:"我在周遭創造美。",color:"#FF9800"},{en:"I trust my instincts.",zh:"我信任我的本能。",color:"#FF9800"},{en:"I am open to receiving love.",zh:"我對接受愛持開放態度。",color:"#FF9800"},{en:"I enjoy the simple pleasures of life.",zh:"我享受生命中簡單的快樂。",color:"#FF9800"},{en:"I am at peace with my past.",zh:"我與我的過去達成和解。",color:"#FF9800"},{en:"I forgive myself for my mistakes.",zh:"我原諒自己的錯誤。",color:"#FF9800"},{en:"I am a source of joy.",zh:"我是一個快樂的泉源。",color:"#FF9800"},{en:"I deserve the best in life.",zh:"我值得生命中最好的事物。",color:"#FF9800"},{en:"I am playful and lighthearted.",zh:"我是愛玩耍且心情輕鬆的。",color:"#FF9800"},{en:"I nourish my body and soul.",zh:"我滋養我的身體與靈魂。",color:"#FF9800"},{en:"I am open to the flow of abundance.",zh:"我對豐盛的流動持開放態度。",color:"#FF9800"},{en:"I express my true self.",zh:"我表達真實的自我。",color:"#FF9800"},{en:"I am filled with inspiration.",zh:"我充滿了靈感。",color:"#FF9800"},{en:"I respect my boundaries.",zh:"我尊重我的界限。",color:"#FF9800"},{en:"I am a wonderful friend.",zh:"我是一個很棒的朋友。",color:"#FF9800"},{en:"I let go of what no longer serves me.",zh:"我放下不再適合我的事物。",color:"#FF9800"},{en:"I am free to be me.",zh:"我能自由地做我自己。",color:"#FF9800"},
+            
+            // 黃色 (35張)
+            {en:"I believe in myself.",zh:"我相信我自己。",color:"#FFEB3B"},{en:"I am powerful and strong.",zh:"我是充滿力量且強壯的。",color:"#FFEB3B"},{en:"I choose to be happy.",zh:"我選擇快樂。",color:"#FFEB3B"},{en:"I express my power with love.",zh:"我用愛表達我的力量。",color:"#FFEB3B"},{en:"I am worthy of all good things.",zh:"我值得擁有所有美好的事物。",color:"#FFEB3B"},{en:"I am focused and clear.",zh:"我是專注且清晰的。",color:"#FFEB3B"},{en:"I master my own life.",zh:"我主宰我自己的生命。",color:"#FFEB3B"},{en:"I respect myself and others.",zh:"我尊重自己也尊重他人。",color:"#FFEB3B"},{en:"I have the courage to say no.",zh:"我有勇氣說不。",color:"#FFEB3B"},{en:"I am proud of my achievements.",zh:"我為自己的成就感到自豪。",color:"#FFEB3B"},{en:"I shine my light brightly.",zh:"我閃耀著光芒。",color:"#FFEB3B"},{en:"I am capable and competent.",zh:"我是有能力且能幹的。",color:"#FFEB3B"},{en:"I trust my inner strength.",zh:"我信任我內在的力量。",color:"#FFEB3B"},{en:"I am a leader in my life.",zh:"我是我生命中的領導者。",color:"#FFEB3B"},{en:"I handle everything with ease.",zh:"我輕鬆地處理每件事。",color:"#FFEB3B"},{en:"I am successful in all I do.",zh:"我所做的每一件事都很成功。",color:"#FFEB3B"},{en:"I allow my light to shine.",zh:"我允許我的光閃耀。",color:"#FFEB3B"},{en:"I am full of self-confidence.",zh:"我充滿了自信。",color:"#FFEB3B"},{en:"I take responsibility for my life.",zh:"我為自己的生命負責。",color:"#FFEB3B"},{en:"I am free to choose my path.",zh:"我可以自由地選擇我的道路。",color:"#FFEB3B"},{en:"I am resilient and strong.",zh:"我是有韌性且強壯的。",color:"#FFEB3B"},{en:"I appreciate my uniqueness.",zh:"我賞識我的獨特性。",color:"#FFEB3B"},{en:"I follow my own inner guidance.",zh:"我跟隨我內在的指引。",color:"#FFEB3B"},{en:"I am a positive influence.",zh:"我是一個正向的影響力。",color:"#FFEB3B"},{en:"I stand up for myself.",zh:"我為自己挺身而出。",color:"#FFEB3B"},{en:"I am clear about my goals.",zh:"我對我的目標很清晰。",color:"#FFEB3B"},{en:"I embrace my personal power.",zh:"我擁抱我的個人力量。",color:"#FFEB3B"},{en:"I am deserving of success.",zh:"我值得擁有成功。",color:"#FFEB3B"},{en:"I create my own destiny.",zh:"我創造我自己的命運。",color:"#FFEB3B"},{en:"I am wise and discerning.",zh:"我是智慧且有辨別力的。",color:"#FFEB3B"},{en:"I have a strong sense of purpose.",zh:"我有強烈的使命感。",color:"#FFEB3B"},{en:"I am calm under pressure.",zh:"我在壓力下保持冷靜。",color:"#FFEB3B"},{en:"I learn and grow every day.",zh:"我每天學習與成長。",color:"#FFEB3B"},{en:"I celebrate my individuality.",zh:"我慶祝我的獨特性。",color:"#FFEB3B"},{en:"I am a radiant being of light.",zh:"我是燦爛的光之生命。",color:"#FFEB3B"},
 
-            // --- 橙色系列 ---
-            { en: "I enjoy my creativity.", zh: "我享受我的創造力。", color: "#FF9800" },
-            { en: "I honor my feelings.", zh: "我尊重我的感受。", color: "#FF9800" },
-            { en: "I am open to new experiences.", zh: "我對新的經驗持開放態度。", color: "#FF9800" },
-            { en: "I flow with the rhythm of life.", zh: "我隨生命的節奏流動。", color: "#FF9800" },
-            { en: "I am unique and beautiful.", zh: "我是獨特且美麗的。", color: "#FF9800" },
-            { en: "I deserve to have fun.", zh: "我值得擁有樂趣。", color: "#FF9800" },
-            { en: "I embrace my sensuality.", zh: "我擁抱我的感官享受。", color: "#FF9800" },
-            { en: "I allow myself to be happy.", zh: "我允許自己快樂。", color: "#FF9800" },
-            { en: "I am a creative being.", zh: "我是一個有創造力的生命。", color: "#FF9800" },
-            { en: "I am flexible and open to change.", zh: "我是靈活且對改變持開放態度的。", color: "#FF9800" },
-            { en: "I express my emotions healthily.", zh: "我健康地表達我的情緒。", color: "#FF9800" },
-            { en: "I am worthy of pleasure.", zh: "我值得擁有愉悅。", color: "#FF9800" },
-            { en: "I celebrate my inner child.", zh: "我慶祝我內在的孩童。", color: "#FF9800" },
-            { en: "I am in touch with my needs.", zh: "我能感知自己的需求。", color: "#FF9800" },
-            { en: "I attract positive relationships.", zh: "我吸引正向的人際關係。", color: "#FF9800" },
-            { en: "I am passionate about life.", zh: "我對生命充滿熱情。", color: "#FF9800" },
-            { en: "I allow my life to be easy.", zh: "我允許我的生活是輕鬆的。", color: "#FF9800" },
-            { en: "I am comfortable with intimacy.", zh: "我對親密感感到自在。", color: "#FF9800" },
-            { en: "I create beauty around me.", zh: "我在周遭創造美。", color: "#FF9800" },
-            { en: "I trust my instincts.", zh: "我信任我的本能。", color: "#FF9800" },
-            { en: "I am open to receiving love.", zh: "我對接受愛持開放態度。", color: "#FF9800" },
-            { en: "I enjoy the simple pleasures of life.", zh: "我享受生命中簡單的快樂。", color: "#FF9800" },
-            { en: "I am at peace with my past.", zh: "我與我的過去達成和解。", color: "#FF9800" },
-            { en: "I forgive myself for my mistakes.", zh: "我原諒自己的錯誤。", color: "#FF9800" },
-            { en: "I am a source of joy.", zh: "我是一個快樂的泉源。", color: "#FF9800" },
-            { en: "I deserve the best in life.", zh: "我值得生命中最好的事物。", color: "#FF9800" },
-            { en: "I am playful and lighthearted.", zh: "我是愛玩耍且心情輕鬆的。", color: "#FF9800" },
-            { en: "I nourish my body and soul.", zh: "我滋養我的身體與靈魂。", color: "#FF9800" },
-            { en: "I am open to the flow of abundance.", zh: "我對豐盛的流動持開放態度。", color: "#FF9800" },
-            { en: "I express my true self.", zh: "我表達真實的自我。", color: "#FF9800" },
-            { en: "I am filled with inspiration.", zh: "我充滿了靈感。", color: "#FF9800" },
-            { en: "I respect my boundaries.", zh: "我尊重我的界限。", color: "#FF9800" },
-            { en: "I am a wonderful friend.", zh: "我是一個很棒的朋友。", color: "#FF9800" },
-            { en: "I let go of what no longer serves me.", zh: "我放下不再適合我的事物。", color: "#FF9800" },
-            { en: "I am free to be me.", zh: "我能自由地做我自己。", color: "#FF9800" },
+            // 綠色 (35張)
+            {en:"I love and accept myself.",zh:"我愛並接納我自己。",color:"#4CAF50"},{en:"My heart is open to love.",zh:"我的心對愛敞開。",color:"#4CAF50"},{en:"I live in harmony with others.",zh:"我與他人和諧共處。",color:"#4CAF50"},{en:"I forgive myself and others.",zh:"我寬恕自己也寬恕他人。",color:"#4CAF50"},{en:"I am surrounded by love.",zh:"我被愛包圍著。",color:"#4CAF50"},{en:"I am a channel for healing.",zh:"我是療癒的管道。",color:"#4CAF50"},{en:"Nature heals and restores me.",zh:"大自然療癒並修復我。",color:"#4CAF50"},{en:"I radiate love to everyone.",zh:"我向每個人放射愛。",color:"#4CAF50"},{en:"I am at peace with the world.",zh:"我與世界和平共處。",color:"#4CAF50"},{en:"I deserve to be loved.",zh:"我值得被愛。",color:"#4CAF50"},{en:"I am full of compassion.",zh:"我充滿了慈悲心。",color:"#4CAF50"},{en:"My heart is a source of joy.",zh:"我的心是快樂的泉源。",color:"#4CAF50"},{en:"I see love in everything.",zh:"我在萬物中看見愛。",color:"#4CAF50"},{en:"I choose to love every day.",zh:"我選擇每天去愛。",color:"#4CAF50"},{en:"I am gentle with myself.",zh:"我對自己溫柔。",color:"#4CAF50"},{en:"Love is my guiding light.",zh:"愛是我的引導之光。",color:"#4CAF50"},{en:"I am safe in love.",zh:"我在愛中是安全的。",color:"#4CAF50"},{en:"I attract loving people.",zh:"我吸引充滿愛的人。",color:"#4CAF50"},{en:"I am grateful for love.",zh:"我對愛充滿感激。",color:"#4CAF50"},{en:"I am a bridge of light.",zh:"我是一座光之橋。",color:"#4CAF50"},{en:"My heart is pure and kind.",zh:"我的心是純潔且善良的。",color:"#4CAF50"},{en:"I listen to my heart.",zh:"我傾聽我的心。",color:"#4CAF50"},{en:"I am open to the power of love.",zh:"我對愛的力量持開放態度。",color:"#4CAF50"},{en:"I heal with every breath.",zh:"我隨著每一次呼吸在療癒。",color:"#4CAF50"},{en:"I am a blessing to others.",zh:"我對他人來說是一份祝福。",color:"#4CAF50"},{en:"Love flows through me.",zh:"愛流經我。",color:"#4CAF50"},{en:"I am one with all that is.",zh:"我與萬物合而為一。",color:"#4CAF50"},{en:"I am filled with inner peace.",zh:"我充滿了內在的和平。",color:"#4CAF50"},{en:"I am kind to all beings.",zh:"我對所有眾生都很和善。",color:"#4CAF50"},{en:"I am a magnet for love.",zh:"我是愛的磁鐵。",color:"#4CAF50"},{en:"My soul is light and free.",zh:"我的靈魂是輕盈且自由的。",color:"#4CAF50"},{en:"I share my love with ease.",zh:"我輕鬆地分享我的愛。",color:"#4CAF50"},{en:"I am connected to the source.",zh:"我與源頭相連結。",color:"#4CAF50"},{en:"Love is the answer.",zh:"愛就是答案。",color:"#4CAF50"},{en:"I am a lighthouse of love.",zh:"我是愛的燈塔。",color:"#4CAF50"},
 
-            // --- 黃色系列 ---
-            { en: "I believe in myself.", zh: "我相信我自己。", color: "#FFEB3B" },
-            { en: "I am powerful and strong.", zh: "我是充滿力量且強壯的。", color: "#FFEB3B" },
-            { en: "I choose to be happy.", zh: "我選擇快樂。", color: "#FFEB3B" },
-            { en: "I express my power with love.", zh: "我用愛表達我的力量。", color: "#FFEB3B" },
-            { en: "I am worthy of all good things.", zh: "我值得擁有所有美好的事物。", color: "#FFEB3B" },
-            { en: "I am focused and clear.", zh: "我是專注且清晰的。", color: "#FFEB3B" },
-            { en: "I master my own life.", zh: "我主宰我自己的生命。", color: "#FFEB3B" },
-            { en: "I respect myself and others.", zh: "我尊重自己也尊重他人。", color: "#FFEB3B" },
-            { en: "I have the courage to say no.", zh: "我有勇氣說不。", color: "#FFEB3B" },
-            { en: "I am proud of my achievements.", zh: "我為自己的成就感到自豪。", color: "#FFEB3B" },
-            { en: "I shine my light brightly.", zh: "我閃耀著光芒。", color: "#FFEB3B" },
-            { en: "I am capable and competent.", zh: "我是有能力且能幹的。", color: "#FFEB3B" },
-            { en: "I trust my inner strength.", zh: "我信任我內在的力量。", color: "#FFEB3B" },
-            { en: "I am a leader in my life.", zh: "我是我生命中的領導者。", color: "#FFEB3B" },
-            { en: "I handle everything with ease.", zh: "我輕鬆地處理每件事。", color: "#FFEB3B" },
-            { en: "I am successful in all I do.", zh: "我所做的每一件事都很成功。", color: "#FFEB3B" },
-            { en: "I allow my light to shine.", zh: "我允許我的光閃耀。", color: "#FFEB3B" },
-            { en: "I am full of self-confidence.", zh: "我充滿了自信。", color: "#FFEB3B" },
-            { en: "I take responsibility for my life.", zh: "我為自己的生命負責。", color: "#FFEB3B" },
-            { en: "I am free to choose my path.", zh: "我可以自由地選擇我的道路。", color: "#FFEB3B" },
-            { en: "I am resilient and strong.", zh: "我是有韌性且強壯的。", color: "#FFEB3B" },
-            { en: "I appreciate my uniqueness.", zh: "我賞識我的獨特性。", color: "#FFEB3B" },
-            { en: "I follow my own inner guidance.", zh: "我跟隨我內在的指引。", color: "#FFEB3B" },
-            { en: "I am a positive influence.", zh: "我是一個正向的影響力。", color: "#FFEB3B" },
-            { en: "I stand up for myself.", zh: "我為自己挺身而出。", color: "#FFEB3B" },
-            { en: "I am clear about my goals.", zh: "我對我的目標很清晰。", color: "#FFEB3B" },
-            { en: "I embrace my personal power.", zh: "我擁抱我的個人力量。", color: "#FFEB3B" },
-            { en: "I am deserving of success.", zh: "我值得擁有成功。", color: "#FFEB3B" },
-            { en: "I create my own destiny.", zh: "我創造我自己的命運。", color: "#FFEB3B" },
-            { en: "I am wise and discerning.", zh: "我是智慧且有辨別力的。", color: "#FFEB3B" },
-            { en: "I have a strong sense of purpose.", zh: "我有強烈的使命感。", color: "#FFEB3B" },
+            // 藍色 (35張)
+            {en:"I speak my truth with love.",zh:"我用愛說出我的真理。",color:"#2196F3"},{en:"I listen to my inner voice.",zh:"我傾聽我內在的聲音。",color:"#2196F3"},{en:"I am at peace.",zh:"我處於和平之中。",color:"#2196F3"},{en:"I communicate clearly and honestly.",zh:"我清晰且誠實地溝通。",color:"#2196F3"},{en:"I express myself freely.",zh:"我自由地表達自己。",color:"#2196F3"},{en:"Silence strengthens me.",zh:"沉默使我強大。",color:"#2196F3"},{en:"I am honest with myself.",zh:"我對自己誠實。",color:"#2196F3"},{en:"I trust my creative expression.",zh:"我信任我的創造性表達。",color:"#2196F3"},{en:"I am a good listener.",zh:"我是一個好的傾聽者。",color:"#2196F3"},{en:"My words have power.",zh:"我的話語具有力量。",color:"#2196F3"},{en:"I am safe to speak my mind.",zh:"我可以安全地說出我的想法。",color:"#2196F3"},{en:"I live in integrity.",zh:"我生活在正直之中。",color:"#2196F3"},{en:"I express my needs with grace.",zh:"我優雅地表達我的需求。",color:"#2196F3"},{en:"I am calm and serene.",zh:"我是平靜且安詳的。",color:"#2196F3"},{en:"I am open to the truth.",zh:"我對真理持開放態度。",color:"#2196F3"},{en:"I value my own opinions.",zh:"我重視自己的意見。",color:"#2196F3"},{en:"I am clear and articulate.",zh:"我是清晰且善於表達的。",color:"#2196F3"},{en:"I honor my word.",zh:"我守信用。",color:"#2196F3"},{en:"I am a channel for divine truth.",zh:"我是神戰真理的管道。",color:"#2196F3"},{en:"I am peaceful and centered.",zh:"我是和平且專注的。",color:"#2196F3"},{en:"I share my wisdom with others.",zh:"我與他人分享我的智慧。",color:"#2196F3"},{en:"I listen with my heart.",zh:"我用心傾聽。",color:"#2196F3"},{en:"I am authentic in all I do.",zh:"我在所做的一切中展現真實。",color:"#2196F3"},{en:"I am a master of communication.",zh:"我是溝通的大師。",color:"#2196F3"},{en:"I find peace in stillness.",zh:"我在靜止中找到平安。",color:"#2196F3"},{en:"I express my gratitude often.",zh:"我經常表達我的感激之情。",color:"#2196F3"},{en:"I am true to myself.",zh:"我忠於自己。",color:"#2196F3"},{en:"I am a calm presence.",zh:"我是一個平靜的存在。",color:"#2196F3"},{en:"I am open and receptive.",zh:"我是開放且具接受性的。",color:"#2196F3"},{en:"I speak words of kindness.",zh:"我說仁慈的話語。",color:"#2196F3"},{en:"I am connected to my inner wisdom.",zh:"我與我內在的智慧相連結。",color:"#2196F3"},{en:"I am a peaceful warrior.",zh:"我是一個和平勇士。",color:"#2196F3"},{en:"I am free to express my joy.",zh:"我自由地表達我的喜悅。",color:"#2196F3"},{en:"I trust the flow of life.",zh:"我信任生命的流動。",color:"#2196F3"},{en:"I am a light in the world.",zh:"我是世界之光。",color:"#2196F3"},
 
-            // --- 綠色系列 ---
-            { en: "I love and accept myself.", zh: "我愛並接納我自己。", color: "#4CAF50" },
-            { en: "My heart is open to love.", zh: "我的心對愛敞開。", color: "#4CAF50" },
-            { en: "I live in harmony with others.", zh: "我與他人和諧共處。", color: "#4CAF50" },
-            { en: "I forgive myself and others.", zh: "我寬恕自己也寬恕他人。", color: "#4CAF50" },
-            { en: "I am surrounded by love.", zh: "我被愛包圍著。", color: "#4CAF50" },
-            { en: "I am a channel for healing.", zh: "我是療癒的管道。", color: "#4CAF50" },
-            { en: "Nature heals and restores me.", zh: "大自然療癒並修復我。", color: "#4CAF50" },
-            { en: "I radiate love to everyone.", zh: "我向每個人放射愛。", color: "#4CAF50" },
-            { en: "I am at peace with the world.", zh: "我與世界和平共處。", color: "#4CAF50" },
-            { en: "I deserve to be loved.", zh: "我值得被愛。", color: "#4CAF50" },
-            { en: "I am full of compassion.", zh: "我充滿了慈悲心。", color: "#4CAF50" },
-            { en: "My heart is a source of joy.", zh: "我的心是快樂的泉源。", color: "#4CAF50" },
-            { en: "I see love in everything.", zh: "我在萬物中看見愛。", color: "#4CAF50" },
-            { en: "I choose to love every day.", zh: "我選擇每天去愛。", color: "#4CAF50" },
-            { en: "I am gentle with myself.", zh: "我對自己溫柔。", color: "#4CAF50" },
-            { en: "Love is my guiding light.", zh: "愛是我的引導之光。", color: "#4CAF50" },
-            { en: "I am safe in love.", zh: "我在愛中是安全的。", color: "#4CAF50" },
-            { en: "I attract loving people.", zh: "我吸引充滿愛的人。", color: "#4CAF50" },
-            { en: "I am grateful for love.", zh: "我對愛充滿感激。", color: "#4CAF50" },
-            { en: "I am a bridge of light.", zh: "我是一座光之橋。", color: "#4CAF50" },
-            { en: "My heart is pure and kind.", zh: "我的心是純潔且善良的。", color: "#4CAF50" },
-            { en: "I listen to my heart.", zh: "我傾聽我的心。", color: "#4CAF50" },
-            { en: "I am open to the power of love.", zh: "我對愛的力量持開放態度。", color: "#4CAF50" },
-            { en: "I heal with every breath.", zh: "我隨著每一次呼吸在療癒。", color: "#4CAF50" },
-            { en: "I am a blessing to others.", zh: "我對他人來說是一份祝福。", color: "#4CAF50" },
-            { en: "Love flows through me.", zh: "愛流經我。", color: "#4CAF50" },
-            { en: "I am one with all that is.", zh: "我與萬物合而為一。", color: "#4CAF50" },
-            { en: "I am filled with inner peace.", zh: "我充滿了內在的和平。", color: "#4CAF50" },
-            { en: "I am kind to all beings.", zh: "我對所有眾生都很和善。", color: "#4CAF50" },
-            { en: "I am a magnet for love.", zh: "我是愛的磁鐵。", color: "#4CAF50" },
-            { en: "My soul is light and free.", zh: "我的靈魂是輕盈且自由的。", color: "#4CAF50" },
-            { en: "I share my love with ease.", zh: "我輕鬆地分享我的愛。", color: "#4CAF50" },
-            { en: "I am connected to the source.", zh: "我與源頭相連結。", color: "#4CAF50" },
+            // 靛色 (35張)
+            {en:"I follow my intuition.",zh:"我跟隨我的直覺。",color:"#3F51B5"},{en:"I see the beauty in everything.",zh:"我看見萬物中的美。",color:"#3F51B5"},{en:"My inner wisdom guides me.",zh:"我內在的智慧引導我。",color:"#3F51B5"},{en:"I am clear and focused.",zh:"我是清晰且專注的。",color:"#3F51B5"},{en:"I trust my vision.",zh:"我信任我的遠見。",color:"#3F51B5"},{en:"Everything is unfolding perfectly.",zh:"一切都在完美地展開。",color:"#3F51B5"},{en:"I am open to cosmic wisdom.",zh:"我對宇宙智慧持開放態度。",color:"#3F51B5"},{en:"I trust my inner sight.",zh:"我信任我內在的視覺。",color:"#3F51B5"},{en:"I am aware and conscious.",zh:"我是有覺知的。",color:"#3F51B5"},{en:"I am a visionary.",zh:"我是一個有遠見的人。",color:"#3F51B5"},{en:"I see beyond the physical.",zh:"我能透視物質世界。",color:"#3F51B5"},{en:"I am connected to my higher self.",zh:"我與我的高我相連結。",color:"#3F51B5"},{en:"I am insightful and wise.",zh:"我是具備洞察力且睿智的。",color:"#3F51B5"},{en:"I create my reality with my thoughts.",zh:"我用思想創造我的實相。",color:"#3F51B5"},{en:"I am open to inspiration.",zh:"我對靈感持開放態度。",color:"#3F51B5"},{en:"I see the truth clearly.",zh:"我清晰地看見真理。",color:"#3F51B5"},{en:"I am intuitive and psychic.",zh:"我有直覺且具感應力。",color:"#3F51B5"},{en:"I trust the universe.",zh:"我信任宇宙。",color:"#3F51B5"},{en:"I am a channel for light.",zh:"我是光的管道。",color:"#3F51B5"},{en:"My mind is calm and clear.",zh:"我的心靈平靜且清晰。",color:"#3F51B5"},{en:"I manifest my dreams.",zh:"我顯化我的夢想。",color:"#3F51B5"},{en:"I am one with the source.",zh:"我與源頭合而為一。",color:"#3F51B5"},{en:"I see the divine in everyone.",zh:"我在每個人身上看見神聖。",color:"#3F51B5"},{en:"I am open to miracles.",zh:"我對奇蹟持開放態度。",color:"#3F51B5"},{en:"I am a spiritual being.",zh:"我是一個靈性的生命。",color:"#3F51B5"},{en:"I follow my soul's purpose.",zh:"我跟隨我靈魂的使命。",color:"#3F51B5"},{en:"I am filled with light.",zh:"我充滿了光。",color:"#3F51B5"},{en:"I am wise beyond my years.",zh:"我擁有超越年齡的智慧。",color:"#3F51B5"},{en:"I see the big picture.",zh:"我看見大局。",color:"#3F51B5"},{en:"I am a being of wisdom.",zh:"我是一個智慧的生命。",color:"#3F51B5"},{en:"I trust my inner guidance.",zh:"我信任我內在的指引。",color:"#3F51B5"},{en:"I am open to infinite possibilities.",zh:"我對無限的可能性持開放態度。",color:"#3F51B5"},{en:"I am enlightened.",zh:"我是被啟發的。",color:"#3F51B5"},{en:"I see the magic in life.",zh:"我看見生命中的魔法。",color:"#3F51B5"},{en:"I am at one with the universe.",zh:"我與宇宙融為一體。",color:"#3F51B5"},
 
-            // --- 藍色系列 ---
-            { en: "I speak my truth with love.", zh: "我用愛說出我的真理。", color: "#2196F3" },
-            { en: "I listen to my inner voice.", zh: "我傾聽我內在的聲音。", color: "#2196F3" },
-            { en: "I am at peace.", zh: "我處於和平之中。", color: "#2196F3" },
-            { en: "I communicate clearly and honestly.", zh: "我清晰且誠實地溝通。", color: "#2196F3" },
-            { en: "I express myself freely.", zh: "我自由地表達自己。", color: "#2196F3" },
-            { en: "Silence strengthens me.", zh: "沉默使我強大。", color: "#2196F3" },
-            { en: "I am honest with myself.", zh: "我對自己誠實。", color: "#2196F3" },
-            { en: "I trust my creative expression.", zh: "我信任我的創造性表達。", color: "#2196F3" },
-            { en: "I am a good listener.", zh: "我是一個好的傾聽者。", color: "#2196F3" },
-            { en: "My words have power.", zh: "我的話語具有力量。", color: "#2196F3" },
-            { en: "I am safe to speak my mind.", zh: "我可以安全地說出我的想法。", color: "#2196F3" },
-            { en: "I live in integrity.", zh: "我生活在正直之中。", color: "#2196F3" },
-            { en: "I express my needs with grace.", zh: "我優雅地表達我的需求。", color: "#2196F3" },
-            { en: "I am calm and serene.", zh: "我是平靜且安詳的。", color: "#2196F3" },
-            { en: "I am open to the truth.", zh: "我對真理持開放態度。", color: "#2196F3" },
-            { en: "I value my own opinions.", zh: "我重視自己的意見。", color: "#2196F3" },
-            { en: "I am clear and articulate.", zh: "我是清晰且善於表達的。", color: "#2196F3" },
-            { en: "I honor my word.", zh: "我守信用。", color: "#2196F3" },
-            { en: "I am a channel for divine truth.", zh: "我是神聖真理的管道。", color: "#2196F3" },
-
-            // --- 靛色系列 ---
-            { en: "I follow my intuition.", zh: "我跟隨我的直覺。", color: "#3F51B5" },
-            { en: "I see the beauty in everything.", zh: "我看見萬物中的美。", color: "#3F51B5" },
-            { en: "My inner wisdom guides me.", zh: "我內在的智慧引導我。", color: "#3F51B5" },
-            { en: "I am clear and focused.", zh: "我是清晰且專注的。", color: "#3F51B5" },
-            { en: "I trust my vision.", zh: "我信任我的遠見。", color: "#3F51B5" },
-            { en: "Everything is unfolding perfectly.", zh: "一切都在完美地展開。", color: "#3F51B5" },
-            { en: "I am open to cosmic wisdom.", zh: "我對宇宙智慧持開放態度。", color: "#3F51B5" },
-            { en: "I trust my inner sight.", zh: "我信任我內在的視覺。", color: "#3F51B5" },
-            { en: "I am aware and conscious.", zh: "我是有覺知的。", color: "#3F51B5" },
-            { en: "I am a visionary.", zh: "我是一個有遠見的人。", color: "#3F51B5" },
-            { en: "I see beyond the physical.", zh: "我能透視物質世界。", color: "#3F51B5" },
-            { en: "I am connected to my higher self.", zh: "我與我的高我相連結。", color: "#3F51B5" },
-            { en: "I am insightful and wise.", zh: "我是具備洞察力且睿智的。", color: "#3F51B5" },
-            { en: "I create my reality with my thoughts.", zh: "我用思想創造我的實相。", color: "#3F51B5" },
-            { en: "I am open to inspiration.", zh: "我對靈感持開放態度。", color: "#3F51B5" },
-            { en: "I see the truth clearly.", zh: "我清晰地看見真理。", color: "#3F51B5" },
-            { en: "I am intuitive and psychic.", zh: "我有直覺且具感應力。", color: "#3F51B5" },
-            { en: "I trust the universe.", zh: "我信任宇宙。", color: "#3F51B5" },
-            { en: "I am a channel for light.", zh: "我是光的管道。", color: "#3F51B5" },
-            { en: "My mind is calm and clear.", zh: "我的心靈平靜且清晰。", color: "#3F51B5" },
-            { en: "I manifest my dreams.", zh: "我顯化我的夢想。", color: "#3F51B5" },
-            { en: "I am one with the source.", zh: "我與源頭合而為一。", color: "#3F51B5" },
-            { en: "I see the divine in everyone.", zh: "我在每個人身上看見神聖。", color: "#3F51B5" },
-            { en: "I am open to miracles.", zh: "我對奇蹟持開放態度。", color: "#3F51B5" },
-            { en: "I am a spiritual being.", zh: "我是一個靈性的生命。", color: "#3F51B5" },
-            { en: "I follow my soul's purpose.", zh: "我跟隨我靈魂的使命。", color: "#3F51B5" },
-            { en: "I am filled with light.", zh: "我充滿了光。", color: "#3F51B5" },
-            { en: "I am wise beyond my years.", zh: "我擁有超越年齡的智慧。", color: "#3F51B5" },
-            { en: "I see the big picture.", zh: "我看見大局。", color: "#3F51B5" },
-            { en: "I am a being of wisdom.", zh: "我是一個智慧的生命。", color: "#3F51B5" },
-            { en: "I trust my inner guidance.", zh: "我信任我內在的指引。", color: "#3F51B5" },
-            { en: "I am open to infinite possibilities.", zh: "我對無限的可能性持開放態度。", color: "#3F51B5" },
-            { en: "I am enlightened.", zh: "我是被啟發的。", color: "#3F51B5" },
-            { en: "I see the magic in life.", zh: "我看見生命中的魔法。", color: "#3F51B5" },
-
-            // --- 紫色系列 ---
-            { en: "I am one with the universe.", zh: "我與宇宙合而為一。", color: "#9C27B0" },
-            { en: "My life is a gift.", zh: "我的生命是一份禮物。", color: "#9C27B0" },
-            { en: "I embrace change with ease.", zh: "我輕鬆地擁抱改變。", color: "#9C27B0" },
-            { en: "I am light and love.", zh: "我就是光，我就是愛。", color: "#9C27B0" },
-            { en: "I trust my spiritual path.", zh: "我信任我的靈性道路。", color: "#9C27B0" },
-            { en: "I am guided by a higher power.", zh: "我受高我力量的指引。", color: "#9C27B0" },
-            { en: "Peace is my true nature.", zh: "和平是我的本性。", color: "#9C27B0" },
-            { en: "I am a divine expression of life.", zh: "我是生命神聖的表達。", color: "#9C27B0" },
-            { en: "I am open to spiritual growth.", zh: "我對靈性的成長持開放態度。", color: "#9C27B0" },
-            { en: "I surrender to the divine will.", zh: "我順從神聖的意志。", color: "#9C27B0" },
-            { en: "I am blessed.", zh: "我是被祝福的。", color: "#9C27B0" },
-            { en: "I am a channel for divine love.", zh: "我是神聖之愛的管道。", color: "#9C27B0" },
-            { en: "I live in the present moment.", zh: "我生活在當下。", color: "#9C27B0" },
-            { en: "I am at one with the source of all life.", zh: "我與生命的源頭合而為一。", color: "#9C27B0" },
-            { en: "I am a spiritual being having a human experience.", zh: "我是一個擁有靈魂體驗的人類。", color: "#9C27B0" },
-            { en: "I am filled with divine wisdom.", zh: "我充滿了神聖的智慧。", color: "#9C27B0" },
-            { en: "I trust the infinite wisdom of the universe.", zh: "我信任宇宙無限的智慧。", color: "#9C27B0" },
-            { en: "I am a radiant being of light.", zh: "我是燦爛的光之生命。", color: "#9C27B0" },
-            { en: "I am connected to the divine.", zh: "我與神聖相連結。", color: "#9C27B0" },
-            { en: "I am free from all attachments.", zh: "我從所有的執著中解脫。", color: "#9C27B0" },
-            { en: "I am eternal and infinite.", zh: "我是永恆且無限的。", color: "#9C27B0" },
-            { en: "I am at peace with all that is.", zh: "我與萬物和平共處。", color: "#9C27B0" }
+            // 紫色 (35張)
+            {en:"I am one with the universe.",zh:"我與宇宙合而為一。",color:"#9C27B0"},{en:"My life is a gift.",zh:"我的生命是一份禮物。",color:"#9C27B0"},{en:"I embrace change with ease.",zh:"我輕鬆地擁抱改變。",color:"#9C27B0"},{en:"I am light and love.",zh:"我就是光，我就是愛。",color:"#9C27B0"},{en:"I trust my spiritual path.",zh:"我信任我的靈性道路。",color:"#9C27B0"},{en:"I am guided by a higher power.",zh:"我受高我力量的指引。",color:"#9C27B0"},{en:"Peace is my true nature.",zh:"和平是我的本性。",color:"#9C27B0"},{en:"I am a divine expression of life.",zh:"我是生命神聖的表達。",color:"#9C27B0"},{en:"I am open to spiritual growth.",zh:"我對靈性的成長持開放態度。",color:"#9C27B0"},{en:"I surrender to the divine will.",zh:"我順從神聖的意志。",color:"#9C27B0"},{en:"I am blessed.",zh:"我是被祝福的。",color:"#9C27B0"},{en:"I am a channel for divine love.",zh:"我是神聖之愛的管道。",color:"#9C27B0"},{en:"I live in the present moment.",zh:"我生活在當下。",color:"#9C27B0"},{en:"I am at one with the source of all life.",zh:"我與生命的源頭合而為一。",color:"#9C27B0"},{en:"I am a spiritual being having a human experience.",zh:"我是一個擁有靈魂體驗的人類。",color:"#9C27B0"},{en:"I am filled with divine wisdom.",zh:"我充滿了神聖的智慧。",color:"#9C27B0"},{en:"I trust the infinite wisdom of the universe.",zh:"我信任宇宙無限的智慧。",color:"#9C27B0"},{en:"I am a radiant being of light.",zh:"我是燦爛的光之生命。",color:"#9C27B0"},{en:"I am connected to the divine.",zh:"我與神聖相連結。",color:"#9C27B0"},{en:"I am free from all attachments.",zh:"我從所有的執著中解脫。",color:"#9C27B0"},{en:"I am eternal and infinite.",zh:"我是永恆且無限的。",color:"#9C27B0"},{en:"I am at peace with all that is.",zh:"我與萬物和平共處。",color:"#9C27B0"},{en:"I am a lighthouse for others.",zh:"我是他人的燈塔。",color:"#9C27B0"},{en:"I am open to divine guidance.",zh:"我對神聖的指引持開放態度。",color:"#9C27B0"},{en:"I am a miracle of life.",zh:"我是生命的奇蹟。",color:"#9C27B0"},{en:"I am filled with universal love.",zh:"我充滿了宇宙之愛。",color:"#9C27B0"},{en:"I am enlightened and aware.",zh:"我是被啟發且有覺知的。",color:"#9C27B0"},{en:"I am a master of my destiny.",zh:"我是我命運的主宰。",color:"#9C27B0"},{en:"I am one with the all.",zh:"我與全體合而為一。",color:"#9C27B0"},{en:"I am love, I am light, I am peace.",zh:"我是愛，我是光，我是和平。",color:"#9C27B0"},{en:"I am a divine creation.",zh:"我是神聖的創造物。",color:"#9C27B0"},{en:"I am whole and complete.",zh:"我是完整且圓滿的。",color:"#9C27B0"},{en:"I am a being of pure consciousness.",zh:"我是純淨意識的生命。",color:"#9C27B0"},{en:"I am grateful for my soul's journey.",zh:"我對我靈魂的旅程充滿感激。",color:"#9C27B0"},{en:"I am that I am.",zh:"我就是我。",color:"#9C27B0"}
         ];
 
-        async function drawCard() {
-            const btn = document.getElementById('drawBtn');
-            const cardEl = document.getElementById('card');
-            const suggestEl = document.getElementById('ai-suggestion');
-            
-            btn.disabled = true;
-            btn.innerText = "感應能量中...";
+        let isDrawing = false;
 
-            // 隨機抽選一張卡片
-            const card = cards[Math.floor(Math.random() * cards.length)];
-            
-            // 更新視覺介面
-            document.documentElement.style.setProperty('--card-color', card.color);
-            cardEl.innerHTML = `<div class="text-en">${card.en}</div><div class="text-zh">${card.zh}</div>`;
-            
-            // 顯示 AI 載入狀態
-            suggestEl.style.display = "block";
-            suggestEl.innerHTML = "<div class='loading'>✨ Gemini 正在為您沉思實踐建議...</div>";
+        function drawCard() {
+            if (isDrawing) return;
+            isDrawing = true;
 
-            try {
-                // 正確的 API 請求路徑 (v1)
-                const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+            const cardInner = document.getElementById('cardInner');
+            const chakraInfo = document.getElementById('chakra-info');
+            
+            // 抽卡流程
+            cardInner.classList.remove('is-flipped');
+            chakraInfo.style.opacity = 0;
+            chakraInfo.style.transform = "translateY(10px)";
+
+            setTimeout(() => {
+                const card = cards[Math.floor(Math.random() * cards.length)];
+                const chakra = chakraData[card.color];
+
+                document.getElementById('displayEn').innerText = card.en;
+                document.getElementById('displayZh').innerText = card.zh;
+                document.getElementById('cardBack').style.backgroundColor = card.color;
                 
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ 
-                            parts: [{ text: `我抽到一張彩虹卡：「${card.zh}」。請針對這句話提供三個落實建議。請用親切溫暖的口吻，條列式呈現，總字數 150 字內。` }] 
-                        }]
-                    })
-                });
+                document.documentElement.style.setProperty('--chakra-color', card.color);
+                document.getElementById('chakraTitle').innerText = chakra.name;
+                document.getElementById('chakraDesc').innerText = chakra.desc;
 
-                const data = await response.json();
-
-                // 錯誤檢查
-                if (data.error) {
-                    throw new Error(data.error.message);
-                }
-
-                if (!data.candidates || !data.candidates[0]) {
-                    throw new Error("AI 暫時無法產生建議，請稍後再試。");
-                }
-
-                const aiResponse = data.candidates[0].content.parts[0].text;
-                suggestEl.innerHTML = `<strong>🌟 Gemini 的實踐建議：</strong><br>${aiResponse.replace(/\n/g, '<br>')}`;
+                cardInner.classList.add('is-flipped');
                 
-            } catch (error) {
-                console.error("Error:", error);
-                suggestEl.innerHTML = `<div class="error-msg">💡 提示：${error.message}</div>`;
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "再次抽取指引";
-            }
+                setTimeout(() => {
+                    chakraInfo.style.opacity = 1;
+                    chakraInfo.style.transform = "translateY(0)";
+                    isDrawing = false;
+                }, 600);
+            }, 350);
         }
     </script>
 </body>
