@@ -1,51 +1,123 @@
-async function drawCard() {
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nina 的 AI 彩虹卡靈性教練</title>
+    <style>
+        :root { --card-color: #ccc; }
+        body { background: #f4f7f6; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; font-family: "PingFang TC", "Heiti TC", sans-serif; margin: 0; padding: 40px 20px; color: #333; }
+        h1 { font-size: 1.2rem; font-weight: 400; color: #888; margin-bottom: 30px; letter-spacing: 2px; }
+        
+        #card { 
+            width: 100%; max-width: 350px; min-height: 220px; background: white; border-radius: 24px; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            padding: 30px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.05); 
+            border-left: 15px solid var(--card-color); transition: all 0.5s ease; margin-bottom: 30px;
+        }
+        
+        .text-en { font-size: 0.95rem; color: #777; margin-bottom: 12px; font-style: italic; line-height: 1.4; }
+        .text-zh { font-size: 1.4rem; font-weight: 600; color: #222; line-height: 1.5; }
+        
+        button { 
+            padding: 16px 50px; font-size: 1.1rem; cursor: pointer; border: none; 
+            background: #444; color: white; border-radius: 50px; transition: 0.3s; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+        }
+        button:hover { background: #000; transform: translateY(-2px); }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        
+        #ai-suggestion { 
+            max-width: 500px; width: 90%; margin-top: 25px; padding: 25px; 
+            background: rgba(255,255,255,0.8); border-radius: 20px; font-size: 1rem; 
+            line-height: 1.8; color: #444; display: none; border: 1px solid #eee;
+            backdrop-filter: blur(10px);
+        }
+        .error-msg { color: #d9534f; font-size: 0.9rem; margin-top: 10px; }
+        .loading { color: #999; font-style: italic; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+    </style>
+</head>
+<body>
+
+    <h1>RAINBOW CARDS</h1>
+
+    <div id="card">
+        <div class="text-en">Welcome. Click below to draw a card.</div>
+        <div class="text-zh">歡迎，點擊下方抽取一張指引。</div>
+    </div>
+
+    <button id="drawBtn" onclick="drawCard()">抽取今日指引</button>
+
+    <div id="ai-suggestion"></div>
+
+    <script>
+        const GEMINI_API_KEY = "AIzaSyB-6ZlAd0HwjoNVgiEnoCm7u-tYxp_Mn00";
+
+        // 範例卡片資料 (之後可自行擴充至 245 張)
+        const cards = [
+            { en: "I feel safe in the world.", zh: "我在世界中感到安全。", color: "#FF5252" },
+            { en: "I enjoy my creativity.", zh: "我享受我的創造力。", color: "#FF9800" },
+            { en: "I believe in myself.", zh: "我相信我自己。", color: "#FFEB3B" },
+            { en: "I love and accept myself.", zh: "我愛並接納我自己。", color: "#4CAF50" },
+            { en: "I speak my truth with love.", zh: "我用愛說出我的真理。", color: "#2196F3" },
+            { en: "I follow my intuition.", zh: "我跟隨我的直覺。", color: "#3F51B5" },
+            { en: "I am light and love.", zh: "我就是光，我就是愛。", color: "#9C27B0" }
+        ];
+
+        async function drawCard() {
             const btn = document.getElementById('drawBtn');
             const cardEl = document.getElementById('card');
             const suggestEl = document.getElementById('ai-suggestion');
             
             btn.disabled = true;
-            btn.innerText = "讀取宇宙能量中...";
+            btn.innerText = "感應能量中...";
 
+            // 1. 隨機抽取卡片
             const card = cards[Math.floor(Math.random() * cards.length)];
             
-            cardEl.style.borderLeftColor = card.color;
+            // 2. 更新視覺介面
+            document.documentElement.style.setProperty('--card-color', card.color);
             cardEl.innerHTML = `<div class="text-en">${card.en}</div><div class="text-zh">${card.zh}</div>`;
             
+            // 3. 顯示 AI 載入狀態
             suggestEl.style.display = "block";
-            suggestEl.innerHTML = "<div class='loading-spinner'>✨ Gemini 正在感應能量...</div>";
+            suggestEl.innerHTML = "<div class='loading'>✨ Gemini 正在為您沉思實踐建議...</div>";
 
             try {
-                // 使用 v1 穩定版
-                const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+                // 使用最穩定的 v1beta 路徑
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
                 
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: `我抽到一張彩虹卡：「${card.zh}」。請給我三個落實建議。` }] }]
+                        contents: [{ parts: [{ text: `我抽到一張彩虹卡：「${card.zh}」。請針對這句話提供三個簡單、具體、今天就能做的落實建議。請用親切溫暖的口吻，條列式呈現，總字數 150 字內。` }] }]
                     })
                 });
 
                 const data = await response.json();
 
-                // 【關鍵保護】：檢查 Google 是否回傳了錯誤訊息
+                // 錯誤檢查邏輯
                 if (data.error) {
-                    throw new Error(`Google API 報錯: ${data.error.message}`);
+                    throw new Error(data.error.message);
                 }
 
-                // 【關鍵保護】：檢查是否有 candidates
-                if (!data.candidates || data.candidates.length === 0) {
-                    throw new Error("API 回傳資料格式不正確，請檢查 API Key 權限。");
+                if (!data.candidates || !data.candidates[0]) {
+                    throw new Error("AI 暫時無法產生建議，請再抽一次。");
                 }
 
                 const aiResponse = data.candidates[0].content.parts[0].text;
-                suggestEl.innerHTML = `<strong>🌟 Gemini 的實踐建議：</strong><br>${aiResponse.replace(/\n/g, '<br>')}`;
+                suggestEl.innerHTML = `<strong>🌟 實踐建議：</strong><br>${aiResponse.replace(/\n/g, '<br>')}`;
                 
             } catch (error) {
-                console.error("詳細錯誤訊息:", error);
-                suggestEl.innerHTML = `💡 抱歉，能量連線中斷。<br><small style="color:red;">原因：${error.message}</small>`;
+                console.error("Error:", error);
+                suggestEl.innerHTML = `<div class="error-msg">💡 提示：${error.message}</div>`;
             } finally {
                 btn.disabled = false;
                 btn.innerText = "再次抽取指引";
             }
         }
+    </script>
+</body>
+</html>
