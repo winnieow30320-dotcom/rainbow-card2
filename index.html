@@ -339,6 +339,8 @@
             border-bottom: 1px solid var(--chakra-color);
         }
         .chakra-desc { font-size: 0.85rem; line-height: 1.9; color: #8a8073; }
+        /* 對應香氣獨立一行，字級略小、顏色略淡，做出層次 */
+        .chakra-aroma { font-size: 0.8rem; line-height: 1.8; color: #a89a83; margin-top: 6px; }
 
         /* ===== 今日行動指引 ===== */
         .action-box {
@@ -393,7 +395,7 @@
             <ul class="rule-list">
                 <li><strong>🌈 靜心呼吸：</strong>抽取前，請閉上眼睛深呼吸三次。</li>
                 <li><strong>🌈 誠心發問：</strong>內心可以默想一個問題，或單純祈求今日的指引。</li>
-                <li><strong>🌈 直覺選擇：</strong>睜開眼，用直覺點擊卡片翻開訊息。</li>
+                <li><strong>🌈 直覺選擇：</strong>睜開眼，帶著直覺按下「開始抽卡」。</li>
                 <li><strong>🌈 落實當下：</strong>將卡片上的文字帶入今天的日常，感受它的力量。</li>
             </ul>
             <button id="startBtn" onclick="startApp()">開 始 抽 卡</button>
@@ -433,6 +435,7 @@
     <div id="chakra-info">
         <div class="chakra-title" id="chakraTitle"></div>
         <div class="chakra-desc" id="chakraDesc"></div>
+        <div class="chakra-aroma" id="chakraAroma"></div>
         <!-- 今日行動指引：從該脈輪的行動清單隨機挑一個 -->
         <div class="action-box">
             <div class="action-title">✦ 今日行動指引 ✦</div>
@@ -444,6 +447,8 @@
     <script>
         function startApp() {
             document.getElementById('intro-overlay').classList.add('hide-intro');
+            /* 介紹頁淡出後直接翻牌，不停留在空白卡面 */
+            setTimeout(drawCard, 500);
         }
 
         /* 每個脈輪除了名稱與說明，多了三個設計欄位：
@@ -451,13 +456,13 @@
            text  = 卡上文字顏色（黃色卡改用深咖啡字，才看得清楚）
            label = 卡背上方的小標 */
         const chakraData = {
-            "#FF5252": { name: "海底輪 (Root)",                 label: "ROOT · 海底輪",        grad: "linear-gradient(150deg, #ff8a80, #d32f2f)", text: "#ffffff", actions: ["赤腳踩在草地或地板上五分鐘，感受腳掌與大地的連結。", "出門散步十五分鐘，專注在每一步踩穩地面的感覺。", "整理一個小角落（桌面、抽屜），讓空間恢復秩序感。", "為自己準備一頓溫熱的餐點，不滑手機、好好吃完。", "把拖延已久的一件小事，今天就完成它。"], desc: "能量與行動力：幫助落實目標，建立安全感。對應香氣：廣藿香、岩蘭草、雪松（沉穩的木質調）。" },
-            "#FF9800": { name: "臍輪 (Sacral)",                 label: "SACRAL · 臍輪",        grad: "linear-gradient(150deg, #ffcc80, #ef6c00)", text: "#ffffff", actions: ["做一件純粹好玩的事：塗鴉、隨音樂擺動、哼歌都可以。", "寫下今天讓你「有感覺」的三件事，不論是感動或不舒服。", "給自己一個小小的享受：一杯喜歡的飲料、一段泡澡時光。", "用甜橙或依蘭精油擴香，允許自己放鬆十分鐘。", "約一位讓你自在的朋友聊聊天，分享最近的心情。"], desc: "創造力與情緒：掌管喜悅，啟動生命的流動。對應香氣：依蘭依蘭、茉莉、甜橙（感性且甜美的香氣）。" },
-            "#FFEB3B": { name: "太陽神經叢 (Solar Plexus)",     label: "SOLAR PLEXUS · 太陽神經叢", grad: "linear-gradient(150deg, #fff59d, #fbc02d)", text: "#5d4a12", actions: ["對著鏡子說三次：「我做得到，我值得。」", "寫下自己的三個優點，貼在看得到的地方。", "練習溫和而堅定地說一次「不」。", "今天做一個小決定時不徵詢任何人，相信自己的判斷。", "完成一個小目標後，記得停下來為自己慶祝一下。"], desc: "自信與個人力量：勇於挑戰，建立自尊心。對應香氣：檸檬、生薑、杜松漿果（提振精神的香氣）。" },
-            "#4CAF50": { name: "心輪 (Heart)",                  label: "HEART · 心輪",         grad: "linear-gradient(150deg, #a5d6a7, #2e7d32)", text: "#ffffff", actions: ["傳一則感謝訊息給一個你想珍惜的人。", "給自己或身邊的人一個十秒鐘的擁抱。", "到有綠意的地方走走，深呼吸三次。", "寫下一句話原諒自己：「我已經盡力了。」", "今天練習少批評自己一次，改用溫柔的話語代替。"], desc: "愛與療癒：學習無條件地愛自己與他人。對應香氣：大馬士革玫瑰、天竺葵、佛手柑（溫暖療癒的香氣）。" },
-            "#2196F3": { name: "喉輪 (Throat)",                 label: "THROAT · 喉輪",        grad: "linear-gradient(150deg, #90caf9, #1565c0)", text: "#ffffff", actions: ["誠實說出一個放在心裡很久的想法，溫和地表達。", "花十分鐘自由書寫，想到什麼寫什麼，不修改。", "今天聽別人說話時，練習不打斷、聽到最後。", "大聲唱一首喜歡的歌，讓聲音自由流動。", "傳訊息告訴一個人你真實的感受或欣賞。"], desc: "溝通與表達：誠實說出真理，展現真實聲音。對應香氣：尤加利、茶樹、薄荷、德國洋甘菊（清涼通透的香氣）。" },
-            "#3F51B5": { name: "眉心輪 (Third Eye)",            label: "THIRD EYE · 眉心輪",   grad: "linear-gradient(150deg, #9fa8da, #283593)", text: "#ffffff", actions: ["靜心五分鐘，只觀察呼吸，念頭來了讓它走。", "睡前寫下今天閃過的直覺或印象深刻的畫面。", "今天做一個「憑直覺」的小選擇，不過度分析。", "遠離螢幕三十分鐘，讓腦袋留白。", "點薰衣草或迷迭香精油，安靜地坐一會兒。"], desc: "直覺與智慧：超越表象，連結內在深層覺知。對應香氣：迷迭香、薰衣草、快樂鼠尾草（幫助冷靜與透徹的香氣）。" },
-            "#9C27B0": { name: "頂輪 (Crown)",                  label: "CROWN · 頂輪",         grad: "linear-gradient(150deg, #ce93d8, #6a1b9a)", text: "#ffffff", actions: ["冥想十分鐘，想像頭頂有一道柔和的光照進來。", "寫下三件今天感恩的事，越小越好。", "抬頭看看天空或雲的流動幾分鐘，什麼都不做。", "點乳香或檀香，靜靜地與自己待在一起。", "睡前對今天說一聲「謝謝」，帶著感謝入睡。"], desc: "靈性與合一：感受宇宙連結，獲得內在平靜。對應香氣：乳香、沒藥、檀香（神聖且平靜的香氣）。" }
+            "#FF5252": { name: "海底輪 (Root)",                 label: "ROOT · 海底輪",        grad: "linear-gradient(150deg, #ff8a80, #d32f2f)", text: "#ffffff", actions: ["赤腳踩在草地或地板上五分鐘，感受腳掌與大地的連結。", "出門散步十五分鐘，專注在每一步踩穩地面的感覺。", "整理一個小角落（桌面、抽屜），讓空間恢復秩序感。", "為自己準備一頓溫熱的餐點，不滑手機、好好吃完。", "把拖延已久的一件小事，今天就完成它。"], desc: "能量與行動力：幫助落實目標，建立安全感。", aroma: "對應香氣：廣藿香、岩蘭草、雪松（沉穩的木質調）" },
+            "#FF9800": { name: "臍輪 (Sacral)",                 label: "SACRAL · 臍輪",        grad: "linear-gradient(150deg, #ffcc80, #ef6c00)", text: "#ffffff", actions: ["做一件純粹好玩的事：塗鴉、隨音樂擺動、哼歌都可以。", "寫下今天讓你「有感覺」的三件事，不論是感動或不舒服。", "給自己一個小小的享受：一杯喜歡的飲料、一段泡澡時光。", "用甜橙或依蘭精油擴香，允許自己放鬆十分鐘。", "約一位讓你自在的朋友聊聊天，分享最近的心情。"], desc: "創造力與情緒：掌管喜悅，啟動生命的流動。", aroma: "對應香氣：依蘭依蘭、茉莉、甜橙（感性且甜美的香氣）" },
+            "#FFEB3B": { name: "太陽神經叢 (Solar Plexus)",     label: "SOLAR PLEXUS · 太陽神經叢", grad: "linear-gradient(150deg, #fff59d, #fbc02d)", text: "#5d4a12", actions: ["對著鏡子說三次：「我做得到，我值得。」", "寫下自己的三個優點，貼在看得到的地方。", "練習溫和而堅定地說一次「不」。", "今天做一個小決定時不徵詢任何人，相信自己的判斷。", "完成一個小目標後，記得停下來為自己慶祝一下。"], desc: "自信與個人力量：勇於挑戰，建立自尊心。", aroma: "對應香氣：檸檬、生薑、杜松漿果（提振精神的香氣）" },
+            "#4CAF50": { name: "心輪 (Heart)",                  label: "HEART · 心輪",         grad: "linear-gradient(150deg, #a5d6a7, #2e7d32)", text: "#ffffff", actions: ["傳一則感謝訊息給一個你想珍惜的人。", "給自己或身邊的人一個十秒鐘的擁抱。", "到有綠意的地方走走，深呼吸三次。", "寫下一句話原諒自己：「我已經盡力了。」", "今天練習少批評自己一次，改用溫柔的話語代替。"], desc: "愛與療癒：學習無條件地愛自己與他人。", aroma: "對應香氣：大馬士革玫瑰、天竺葵、佛手柑（溫暖療癒的香氣）" },
+            "#2196F3": { name: "喉輪 (Throat)",                 label: "THROAT · 喉輪",        grad: "linear-gradient(150deg, #90caf9, #1565c0)", text: "#ffffff", actions: ["誠實說出一個放在心裡很久的想法，溫和地表達。", "花十分鐘自由書寫，想到什麼寫什麼，不修改。", "今天聽別人說話時，練習不打斷、聽到最後。", "大聲唱一首喜歡的歌，讓聲音自由流動。", "傳訊息告訴一個人你真實的感受或欣賞。"], desc: "溝通與表達：誠實說出真理，展現真實聲音。", aroma: "對應香氣：尤加利、茶樹、薄荷、德國洋甘菊（清涼通透的香氣）" },
+            "#3F51B5": { name: "眉心輪 (Third Eye)",            label: "THIRD EYE · 眉心輪",   grad: "linear-gradient(150deg, #9fa8da, #283593)", text: "#ffffff", actions: ["靜心五分鐘，只觀察呼吸，念頭來了讓它走。", "睡前寫下今天閃過的直覺或印象深刻的畫面。", "今天做一個「憑直覺」的小選擇，不過度分析。", "遠離螢幕三十分鐘，讓腦袋留白。", "點薰衣草或迷迭香精油，安靜地坐一會兒。"], desc: "直覺與智慧：超越表象，連結內在深層覺知。", aroma: "對應香氣：迷迭香、薰衣草、快樂鼠尾草（幫助冷靜與透徹的香氣）" },
+            "#9C27B0": { name: "頂輪 (Crown)",                  label: "CROWN · 頂輪",         grad: "linear-gradient(150deg, #ce93d8, #6a1b9a)", text: "#ffffff", actions: ["冥想十分鐘，想像頭頂有一道柔和的光照進來。", "寫下三件今天感恩的事，越小越好。", "抬頭看看天空或雲的流動幾分鐘，什麼都不做。", "點乳香或檀香，靜靜地與自己待在一起。", "睡前對今天說一聲「謝謝」，帶著感謝入睡。"], desc: "靈性與合一：感受宇宙連結，獲得內在平靜。", aroma: "對應香氣：乳香、沒藥、檀香（神聖且平靜的香氣）" }
         };
 
         const cards = [
@@ -537,6 +542,7 @@
 
                 document.getElementById('chakraTitle').innerText = chakra.name;
                 document.getElementById('chakraDesc').innerText = chakra.desc;
+                document.getElementById('chakraAroma').innerText = "🌿 " + chakra.aroma;
 
                 currentChakra = chakra;
                 document.getElementById('actionText').innerText = pickAction(chakra);
